@@ -1,0 +1,43 @@
+version: '3'
+services:
+  cockroachdb-init:
+    image: heyal/cockroach:latest
+    entrypoint: sh /cockroach/init.sh
+    depends_on:
+      - cockroachdb
+
+  cockroachdb:
+    container_name: cockroachdb
+    image: heyal/cockroach:latest
+    command: start --insecure
+    restart: unless-stopped
+    volumes:
+      - data:/var/lib/cockroach
+    expose:
+      - "8080"
+      - "26257"
+    ports:
+      - "26257:26257"
+      - "8080:8080"
+
+  accounts:
+    container_name: accounts
+    image: heyal/flask-cockroach:latest
+    restart: always
+    links:
+      - "cockroachdb:db"
+    depends_on:
+      - cockroachdb-init
+    expose:
+      - "5000"
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 300s
+      timeout: 50s
+      retries: 5
+    environment:
+      - DB_URL=cockroachdb
+volumes:
+  data:
