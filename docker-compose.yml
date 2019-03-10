@@ -39,5 +39,21 @@ services:
       retries: 5
     environment:
       - DB_URL=cockroachdb
+
+  accoutnsjava:
+    container_name: accoutns-java
+    image: heyal/quarkus-cockroach:latest
+    restart: always
+    links:
+      - "cockroachdb:db"
+    depends_on:
+      - cockroachdb-init
+    expose:
+      - "8080"
+    ports:
+      - "8090:8080"
+    environment:
+      - DB_URL=cockroachdb
+
 volumes:
   data:
